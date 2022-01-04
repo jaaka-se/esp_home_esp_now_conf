@@ -1,0 +1,68 @@
+esphome:
+  name: esp01a
+  platform: ESP8266
+  board: esp01_1m
+  #arduino_version: LATEST
+  includes:
+  - MeshRC.h
+
+# Enable logging
+logger:
+ level: VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password:  !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp01A Fallback Hotspot"
+    password:  !secret ota_pwd
+
+captive_portal:
+
+sensor:
+  - platform: adc
+    pin: VCC
+    name: "VCC Voltage"
+    on_value:
+    - lambda: MeshRC::send("VCC Voltage adc on_value "+(String)x);
+    filters:
+    - lambda: MeshRC::send("VCC Voltage adc "+(String)x); return x;
+#------------------
+  - platform: dht
+    model: 'DHT11'
+    pin: GPIO0
+    temperature:
+      name: "Living Room Temperature"
+      on_value:
+      - lambda: MeshRC::send("${temperature.name} dht11 on_value "+(String)x);
+    humidity:
+      name: "Living Room Humidity"
+    update_interval: 60s
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO2
+      mode: INPUT_PULLUP
+      inverted: True
+    name: '${upper_devicename} Button'
+    filters:
+      - delayed_off: 3s
+    on_press:
+      - lambda: MeshRC::send("my_remote on");
+    on_release:
+      - lambda: MeshRC::send("my_remote off");
+
+custom_component:
+- lambda: |-
+    MeshRC::begin(9);
+    return {};
+

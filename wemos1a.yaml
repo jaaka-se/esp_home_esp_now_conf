@@ -1,0 +1,109 @@
+esphome:
+  name: esp12-a
+  platform: ESP8266
+  board: esp12e
+  includes:
+  - MeshRC.h
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "esp12-a Fallback Hotspot"
+    password: !secret ota_pwd
+
+captive_portal:
+
+output:
+- platform: gpio
+  pin: GPIO2
+  id: internal_led
+  inverted: True
+light:
+- platform: binary
+  output: internal_led
+  id: esp12_a_led
+  name: 'My led 12a'
+  on_turn_on:
+    - lambda: MeshRC::send("Internal_led esp12-a on");
+  on_turn_off:
+    - lambda: MeshRC::send("Internal_led esp12-a off ");
+
+sensor:
+  - platform: adc
+    pin: VCC
+    name: "VCC wemos Voltage esp12-a"
+    on_value:
+    - lambda: MeshRC::send("VCC esp12-a Voltage adc on_value "+(String)x);
+    filters:
+    - lambda: MeshRC::send("VCC esp12-a filterd Voltage adc "+(String)x); return x;
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO12
+      mode: INPUT_PULLUP
+      inverted: True
+    name: '${upper_devicename} Button13'
+    filters:
+      - delayed_off: 3s
+    on_press:
+      - lambda: MeshRC::send("my_remote 12 on");
+    on_release:
+      - lambda: MeshRC::send("my_remote 12 off");
+      
+  - platform: gpio
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+      inverted: True
+    name: '${upper_devicename} Button13'
+    filters:
+      - delayed_off: 3s
+    on_press:
+      - lambda: MeshRC::send("my_remote 13 on");
+    on_release:
+      - lambda: MeshRC::send("my_remote 13 off");
+      
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+    name: '${upper_devicename} Button14'
+    filters:
+      - delayed_off: 3s
+    on_press:
+      - lambda: MeshRC::send("my_remote 14 on");
+    on_release:
+      - lambda: MeshRC::send("my_remote 14 off");
+      
+# Example configuration entry
+switch:
+  - platform: gpio
+    pin: 4
+    name: "Living Room Dehumidifier"   
+    
+    
+
+custom_component:
+- lambda: |-
+    MeshRC::begin(9);
+    MeshRC::on("my_remote-esp32-w-32d-1 on", []() {
+      id(esp12_a_led)->turn_on().perform();
+    });
+    MeshRC::on("my_remote-esp32-w-32d-1 off", []() {
+      id(esp12_a_led)->turn_off().perform();
+    });
+    return {};
+

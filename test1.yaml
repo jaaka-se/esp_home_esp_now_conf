@@ -1,0 +1,39 @@
+esphome:
+  name: test1
+  platform: ESP8266
+  board: esp01_1m
+  includes:
+  - MyRC.h
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: !secret ota_pwd
+
+wifi:
+  ssid: "!secret wifi_ssid"
+  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test1 Fallback Hotspot"
+    password: !secret ota_pwd
+
+captive_portal:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO2
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "${upper_devicename} Button"
+    filters:
+      - delayed_off: 3s
+    on_press:
+#      - lambda: ESP_LOGI("main2","my_remote on"); ESP_LOGI("main2","my_remote on2");
+      - lambda: MyRC::log("location1","my_remote on");

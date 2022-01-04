@@ -1,0 +1,77 @@
+esphome:
+  name: camb2
+  platform: ESP32
+  board: esp32cam
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret ota_pwd
+
+ota:
+  password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Camb2 Fallback Hotspot"
+    password: !secret ota_pwd
+
+
+
+# Example configuration entry AI-thinker
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+
+  # Image settings
+  name: camb2
+  resolution: 1280x1024
+  # ...
+
+# Pir sensor  
+binary_sensor:
+  - platform: gpio
+    pin: GPIO13
+    name: "camb2 PIR Sensor"
+    device_class: motion
+
+# wifi_signal sensor
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    update_interval: 60s
+
+# Flashlight
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: gpio_4
+    
+light:
+  - platform: binary
+    output: gpio_4
+    name: camb1 light
+
+
+
+web_server:
+  port: 80
+  auth:
+    username: camadmin
+    password: !secret web_server_password
+

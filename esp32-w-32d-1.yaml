@@ -1,0 +1,67 @@
+esphome:
+  name: esp32-w-32d-1
+  platform: ESP32
+  board: esp-wrover-kit
+  includes:
+  - Mesh32RC.h
+  
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+  power_save_mode: NONE
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    channel: 9
+    password: !secret ota_pwd
+
+captive_portal:
+switch:
+  - platform: template
+    name: "Ext esp12 led"
+    id: esp12_a_led
+    optimistic: true
+    on_turn_on: 
+      - lambda:
+          id(esp12_a_led).publish_state(true);
+          Mesh32RC::send("my_remote-esp32-w-32d-1 from esp12a ON");
+
+    on_turn_off: 
+    - lambda: 
+        id(esp12_a_led).publish_state(false);
+        Mesh32RC::send("my_remote-esp32-w-32d-1 from esp12a OFF");
+
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+      inverted: True
+    name: 'gpio5 Button'
+    on_press:
+      - lambda: Mesh32RC::send("my_remote-esp32-w-32d-1 on");
+    on_release:
+      - lambda: Mesh32RC::send("my_remote-esp32-w-32d-1 off");
+
+custom_component:
+- lambda: |-
+    Mesh32RC::begin(9);
+    Mesh32RC::on("Internal_led esp12-a on", []() {
+      id(esp12_a_led)->publish_state(true);
+    });
+    Mesh32RC::on("Internal_led esp12-a off", []() {
+      id(esp12_a_led)->publish_state(false);
+      Mesh32RC::send("my_remote-esp32-w-32d-1 from esp12a off");
+    });
+    return {};
+

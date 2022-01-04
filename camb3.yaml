@@ -1,0 +1,66 @@
+esphome:
+  name: camb3
+  platform: ESP32
+  board: esp32cam
+  includes:
+    - Custom32.h
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret ota_pwd
+
+ota:
+  password: "7bbfd7d480fbf364e33058090bcfc398"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Camb3 Fallback Hotspot"
+    password: !secret ota_pwd
+
+captive_portal:
+
+
+# Example configuration entry
+esp32_camera:
+  name: Camb3
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+  reset_pin: GPIO15
+  resolution: 1280x1024
+  jpeg_quality: 10
+  idle_framerate: 0.5 fps
+  # Example configuration entry
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+
+# Example configuration entry
+sensor:
+- platform: custom
+  lambda: |-
+    auto my_temp = new MyCustomSensorP();
+    App.register_component(my_temp);
+    return {my_temp};
+
+  sensors:
+    name: "My Cpu temp camb3"
+    unit_of_measurement: C
+    accuracy_decimals: 1

@@ -45,11 +45,52 @@ void setMaster(uint8_t *addr, uint8_t channel) {
 	const esp_now_peer_info_t *peer_p = & peer;
 	esp_now_add_peer(peer_p);
 }
+void addReceiver(uint8_t *addr, uint8_t channel) {
+	if (esp_now_is_peer_exist(addr)) {
+		Serial.printf("Add Receiver exists %02X:%02X:%02X:%02X:%02X:%02X \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+	} else {
+		esp_now_peer_info_t peer;
+		for (int ii = 0; ii < 6; ++ii) {
+			peer.peer_addr[ii] = addr[ii];
+		}
+		peer.ifidx = WIFI_IF_STA;
+		peer.channel = channel;
+		peer.encrypt = false;
+		const esp_now_peer_info_t *peer_p = & peer;
+		esp_err_t result = esp_now_add_peer(peer_p);
+#ifdef MESH_RC_DEBUG_ALL_MSG
+		if ( result == ESP_OK ) {
+			Serial.println("ESPNOW esp_now_add_peer Success.");
+		}
+		else if (result == ESP_ERR_ESPNOW_NOT_INIT) {
+			// How did we get so far!!
+			Serial.println("ESPNOW not init.");
+		}	
+		else if (result == ESP_ERR_ESPNOW_ARG) {
+			Serial.println("esp_now_add_peer Invalid Argument");
+		}
+		else if (result == ESP_ERR_ESPNOW_FULL) {
+			Serial.println("Peer List Full");
+		}
+		else if (result == ESP_ERR_ESPNOW_NO_MEM) {
+			Serial.println("ESP_ERR_ESPNOW_NO_MEM");
+		}
+		else if (result == ESP_ERR_ESPNOW_EXIST) {
+			Serial.println("Peer has existed.");
+		}
+#else
+		if ( result != ESP_OK ) {
+			Serial.println("ESPNOW esp_now_add_peer failed.");
+		}
+#endif
+	}
+}
 
 void send(uint8_t *data, uint8_t size) { //updated
 	sending = true;
 	sendTime = micros();
-	esp_err_t result = esp_now_send(master ? master : broadcast, data, size);
+	esp_err_t result = esp_now_send(NULL, data, size);
+//	esp_err_t result = esp_now_send(master ? master : broadcast, data, size);
 	if ( result != ESP_OK ) {
 		if (result == ESP_ERR_ESPNOW_NOT_INIT) {
 			// How did we get so far!!
@@ -71,7 +112,8 @@ void send(uint8_t *data, uint8_t size) { //updated
 			Serial.println("*** Not sure what happened");
 		}
 	} else {
-		Serial.printf("Sent %u bytes \n",size);
+		Serial.printf("Sent %u bytes OK  \n",size);
+//		Serial.printf("Sent %u bytes  to %02X:%02X:%02X:%02X:%02X:%02X OK  \n",size,addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 	}
 }
 
@@ -126,19 +168,23 @@ bool equals(const uint8_t *a, const uint8_t *b, uint8_t size, uint8_t offset = 0
 	return true;
 }
 
+void log_status() {
+	Serial.println("My MacAddr "+WiFi.macAddress());
+	Serial.println("My AP MacAddr " + WiFi.softAPmacAddress());
+	
+}
+
+
+
 //-----------------------------init and callback definition
 esp_now_send_cb_t sendHandler = [](const uint8_t *addr, esp_now_send_status_t err) { //updated
 	sending = false;
 	duration = micros() - sendTime;
 	if ( err != ESP_NOW_SEND_SUCCESS ) {
-		Serial.write("*** ESP_NOW_SEND_FAILED to ");
-		Serial.printf(" Addr=");
-		for (auto a = 0; a < 6;a++) {
-			Serial.printf("%02X ", addr[a]);
-		}
-		Serial.println(" ");
+		Serial.printf("*** ESP_NOW_SEND_FAILED Send cb to= %02X:%02X:%02X:%02X:%02X:%02X NOK  \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+		Serial.printf("Send cb err= %i \n",err);
 	} else {
-		Serial.printf("Send cb OK duration %u \n",duration);
+		Serial.printf("Send cb from= %02X:%02X:%02X:%02X:%02X:%02X OK duration %u \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5],duration);
 	}
 };
 
@@ -173,12 +219,16 @@ esp_now_recv_cb_t recvHandler = [](const uint8_t *addr, const uint8_t *data, int
 			if (equals(data, (uint8_t *)events[i].prefix.c_str(), offset)) {
 				if (events[i].callback) events[i].callback();
 				if (events[i].callback2) events[i].callback2(&data[offset], size - offset);
+#ifdef MESH_RC_DEBUG_ALL_MSG
 				Serial.println("For me ");
+#endif
 			} 
 		}
+#ifdef MESH_RC_DEBUG_ALL_MSG
 	} else {
 		ignored++;
 		Serial.println("Ignored ");
+#endif
 	}
 };
 
@@ -186,51 +236,22 @@ void begin(uint8_t channel) { //updated
 #ifdef MESH_RC_DEBUG_ALL_MSG
 	Serial.println(":: MESH32_RC espnow begin: ");
 #endif
-	WiFi.mode(WIFI_STA);
+	WiFi.mode(WIFI_MODE_APSTA);
 	//esp_wifi_set_ps(WIFI_PS_NONE);
+
 	esp_err_t result =esp_now_init();
 	if (result == ESP_OK) {
 #ifdef MESH_RC_DEBUG_ALL_MSG
 	Serial.println(":: MESH32_RC espnow OK: ");
 #endif
-		if (esp_now_is_peer_exist(broadcast)) {
-			esp_now_del_peer(broadcast);
-		}
 		//esp_now_set_self_role(ESP_NOW_ROLE_COMBO);//ej hittad??
-		esp_now_peer_info_t peer;
-		for (int ii = 0; ii < 6; ++ii) {
-			peer.peer_addr[ii] = (uint8_t)0xff;
-		}
-		peer.ifidx = WIFI_IF_STA;
-		peer.channel = channel;
-		peer.encrypt = false;
-		const esp_now_peer_info_t *peer_p = & peer;
-		result = esp_now_add_peer(peer_p);
-#ifdef MESH_RC_DEBUG_ALL_MSG
-		if ( result == ESP_OK ) {
-			Serial.println("ESPNOW esp_now_add_peer Success.");
-		}
-		else if (result == ESP_ERR_ESPNOW_NOT_INIT) {
-			// How did we get so far!!
-			Serial.println("ESPNOW not init.");
-		}	
-		else if (result == ESP_ERR_ESPNOW_ARG) {
-			Serial.println("esp_now_add_peer Invalid Argument");
-		}
-		else if (result == ESP_ERR_ESPNOW_FULL) {
-			Serial.println("Peer List Full");
-		}
-		else if (result == ESP_ERR_ESPNOW_NO_MEM) {
-			Serial.println("ESP_ERR_ESPNOW_NO_MEM");
-		}
-		else if (result == ESP_ERR_ESPNOW_EXIST) {
-			Serial.println("Peer has existed.");
-		}
-#else
-		if ( result != ESP_OK ) {
-			Serial.println("ESPNOW esp_now_add_peer failed.");
-		}
-#endif
+		 uint8_t esp01C[6] = {0xE8, 0xDB, 0x84, 0x99, 0x4C, 0xA0};
+		 uint8_t esp01Cap[6] = {0xEA, 0xDB, 0x84, 0x99, 0x4C, 0xA0};
+//const uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+addReceiver(broadcast,0);
+addReceiver(esp01C,0);
+addReceiver(esp01Cap,0);
+//addReceiver(,0);
 
 		esp_now_register_send_cb(sendHandler);
 		esp_now_register_recv_cb(recvHandler);
@@ -239,7 +260,9 @@ void begin(uint8_t channel) { //updated
 #endif
 	} else {
 	Serial.println(":: MESH32_RC espnow init failed: ");
-	}		
+	}
+	
+			
 #ifdef MESH_RC_DEBUG_ALL_MSG
 	Serial.println(":: MESH32_RC begin finished: ");
 #endif

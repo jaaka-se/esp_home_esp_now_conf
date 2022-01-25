@@ -1,0 +1,61 @@
+esphome:
+  name: espnow-w1
+  platform: ESP8266
+  board: d1_mini
+  arduino_version: LATEST
+  includes:
+  - MeshRC.h
+
+# Enable logging
+logger:
+
+#ota:
+#  password: !secret ota_pwd
+
+#wifi:
+#  ssid: !secret wifi_ssid
+#  password: !secret wifi_pwd
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+#  ap:
+#    ssid: "Espnow-W1 Fallback Hotspot"
+#    password: !secret ota_pwd 
+
+#captive_portal:
+output:
+- platform: gpio
+  pin: 13
+  id: my_output
+
+light:
+- platform: binary
+  output: my_output
+  id: my_light
+  name: My Light
+
+switch:
+- platform: gpio
+  pin: 12
+  id: my_switch
+  on_turn_on:
+  - lambda: MeshRC.send("my_switch on");
+  on_turn_off:
+  - lambda: MeshRC.send("my_switch off");
+
+custom_component:
+- lambda: |-
+    MeshRC.begin(9);
+    MeshRC.on("my_motion on", []() {
+      id(my_light)->turn_on().perform();
+    });
+    MeshRC.on("my_motion off", []() {
+      id(my_light)->turn_off().perform();
+    });
+    MeshRC.on("status my_switch", []() {
+      if (id(my_switch).state) {
+        MeshRC.send("my_switch on");
+      } else {
+        MeshRC.send("my_switch off");
+      }
+    });
+    return {};

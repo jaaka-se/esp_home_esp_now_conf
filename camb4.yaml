@@ -1,9 +1,7 @@
 esphome:
-  name: camb3
+  name: camb4
   platform: ESP32
   board: esp32cam
-  includes:
-    - Custom32.h
 
 # Enable logging
 logger:
@@ -21,14 +19,14 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Camb3 Fallback Hotspot"
+    ssid: "Camb4 Fallback Hotspot"
     password: !secret ota_pwd
 
 
 
 # Example configuration entry
 esp32_camera:
-  name: Camb3
+  name: Camb4
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -40,6 +38,7 @@ esp32_camera:
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
+#  reset_pin: GPIO15
   resolution: 1280x1024
   # Example configuration entry
 esp32_camera_web_server:

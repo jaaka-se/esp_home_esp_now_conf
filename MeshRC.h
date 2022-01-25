@@ -21,7 +21,7 @@ struct esp_rc_event_t {
 
 u8 buffer[250];
 u8 broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-u8 channel = 0;
+u8 usedChannel = 0;
 u8 events_num = 0;
 u32 received;
 u32 ignored;
@@ -37,7 +37,7 @@ void setMaster(u8 *addr) {
 	if (esp_now_is_peer_exist(master))
 		esp_now_del_peer(master);
 	master = addr;
-	esp_now_add_peer(master, ESP_NOW_ROLE_COMBO, channel, psk, sizeof(psk));
+	esp_now_add_peer(master, ESP_NOW_ROLE_COMBO, usedChannel, psk, sizeof(psk));
 }
 void send(u8 *data, u8 size) {
 	sending = true;
@@ -99,15 +99,17 @@ bool equals(u8 *a, u8 *b, u8 size, u8 offset = 0) {
 esp_now_send_cb_t sendHandler = [](u8 *addr, u8 err) {
 	sending = false;
 	duration = micros() - sendTime;
-	if ( err != ESP_NOW_SEND_SUCCESS ) {
+	if ( err != 0 ) {
 		Serial.write("*** ESP_NOW_SEND_FAILED to ");
 		Serial.printf(" Addr=");
 		for (auto a = 0; a < 6;a++) {
 			Serial.printf("%02X ", addr[a]);
 		}
 		Serial.println(" ");
+#ifdef MESH_RC_DEBUG_ALL_MSG
 	} else {
 		Serial.printf("Send cb OK duration %u \n",duration);
+#endif
 	}
 };
 
@@ -141,12 +143,16 @@ esp_now_recv_cb_t recvHandler = [](u8 *addr, u8 *data, u8 size) {
 			if (equals(data, (u8 *)events[i].prefix.c_str(), offset)) {
 				if (events[i].callback) events[i].callback();
 				if (events[i].callback2) events[i].callback2(&data[offset], size - offset);
+#ifdef MESH_RC_DEBUG_ALL_MSG
 				Serial.println("For me ");
+#endif
 			} 
 		}
 	} else {
 		ignored++;
+#ifdef MESH_RC_DEBUG_ALL_MSG
 		Serial.println("Ignored ");
+#endif
 	}
 };
 void begin(u8 channel) {
@@ -158,7 +164,8 @@ void begin(u8 channel) {
 			esp_now_del_peer(broadcast);
 		}
 		esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
-		esp_now_add_peer(broadcast, ESP_NOW_ROLE_COMBO, channel, 0, 0);
+		usedChannel = channel;
+		esp_now_add_peer(broadcast, ESP_NOW_ROLE_COMBO, usedChannel, 0, 0);
 		esp_now_register_send_cb(sendHandler);
 		esp_now_register_recv_cb(recvHandler);
 #ifdef MESH_RC_DEBUG_ALL_MSG

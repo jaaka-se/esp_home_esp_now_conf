@@ -23,6 +23,7 @@ wifi:
   ap:
     channel: 9
     password: !secret ota_pwd
+  #  ap_timeout: 48h
 
 captive_portal:
 switch:
@@ -38,6 +39,7 @@ switch:
     on_turn_off: 
     - lambda: 
         id(esp12_a_led).publish_state(false);
+        Mesh32RC::log_status();
         Mesh32RC::send("my_remote-esp32-w-32d-1 from esp12a OFF");
 
 
@@ -55,7 +57,7 @@ binary_sensor:
 
 custom_component:
 - lambda: |-
-    Mesh32RC::begin(9);
+    Mesh32RC::begin(0);
     Mesh32RC::on("Internal_led esp12-a on", []() {
       id(esp12_a_led)->publish_state(true);
     });

@@ -41,7 +41,12 @@ esp32_camera:
   # Image settings
   name: camb2
   resolution: 1280x1024
-  # ...
+  # Example configuration entry
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
 
 # Pir sensor  
 binary_sensor:

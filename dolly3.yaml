@@ -1,9 +1,13 @@
 esphome:
-  name: dolly2
-  platform: ESP32
-  board: esp32cam
+  name: dolly3
   includes:
   - Mesh32RC.h
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
 
 
 # Enable logging
@@ -22,14 +26,14 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Dolly2 Fallback Hotspot"
+    ssid: "dolly3 Fallback Hotspot"
     password: !secret ota_pwd
 
 
 
 # Example configuration entry
 esp32_camera:
-  name: Dolly2
+  name: dolly3
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -41,7 +45,9 @@ esp32_camera:
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
-  resolution: 1280x1024
+  resolution: 800x600
+  horizontal_mirror: False
+  vertical_flip: False
   # Example configuration entry
 esp32_camera_web_server:
   - port: 8080
@@ -74,29 +80,6 @@ light:
     name: dolly2 light
 
 switch:
-  - platform: gpio
-    pin: GPIO12
-    name: IrCut R
-    id: IrCutR
-   # restore_mode: always_off
-    icon: "mdi:gate"
-    interlock: [IrCutL]
-    on_turn_on:
-    - delay: 200ms
-    - switch.turn_off: IrCutR
-
-
-  - platform: gpio
-    pin: GPIO14
-    name: "IrCut L"
-    id: IrCutL
-    #restore_mode: always_off
-    icon: "mdi:gate"
-    interlock: [IrCutR]
-    on_turn_on:
-    - delay: 200ms
-    - switch.turn_off: IrCutL
-
   - platform: gpio
     pin: GPIO15
     name: "Reboot"

@@ -18,8 +18,7 @@ struct esp_rc_event_t {
 	esp_rc_data_callback_t callback2;
 } events[250];
 
-uint8_t buffer[250];
-const uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t buffer[250]; uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t channel = 0;
 uint8_t events_num = 0;
 uint32_t received;
@@ -267,6 +266,12 @@ addReceiver(esp01Cap,0);
 	Serial.println(":: MESH32_RC begin finished: ");
 #endif
 }
+void Reboot() {
+  Serial.printf("reboot orderd in 1s");
+  delay(1000);
+  ESP.restart();
+};
+ 
 }  // namespace Mesh32RC
 
 #endif	//__MESH32_RC_H__

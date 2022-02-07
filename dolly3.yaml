@@ -1,9 +1,14 @@
 esphome:
-  name: camb3
-  platform: ESP32
-  board: esp32cam
+  name: dolly3
   includes:
-    - Custom32.h
+  - Mesh32RC.h
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+
 
 # Enable logging
 logger:
@@ -21,14 +26,14 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Camb3 Fallback Hotspot"
+    ssid: "dolly3 Fallback Hotspot"
     password: !secret ota_pwd
 
 
 
 # Example configuration entry
 esp32_camera:
-  name: Camb3
+  name: dolly3
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -40,13 +45,22 @@ esp32_camera:
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
-  resolution: 1280x1024
+  resolution: 800x600
+  horizontal_mirror: False
+  vertical_flip: False
   # Example configuration entry
 esp32_camera_web_server:
   - port: 8080
     mode: stream
   - port: 8081
     mode: snapshot
+
+# Pir sensor  
+binary_sensor:
+  - platform: gpio
+    pin: GPIO13
+    name: "Garage PIR Sensor"
+    device_class: motion
 
 # Example configuration entry
 sensor:
@@ -63,8 +77,14 @@ output:
 light:
   - platform: binary
     output: gpio_4
-    name: camb1 light
+    name: dolly2 light
 
+switch:
+  - platform: gpio
+    pin: GPIO15
+    name: "Reboot"
+    on_turn_on:
+        - lambda: Mesh32RC::Reboot();
 
 
 web_server:

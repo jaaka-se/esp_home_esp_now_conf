@@ -65,7 +65,7 @@ output:
 light:
   - platform: binary
     output: gpio_4
-    name: camb1 light
+    name: camb2 light
 
 
 

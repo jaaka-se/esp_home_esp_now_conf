@@ -15,11 +15,13 @@ ota:
   password: !secret ota_pwd
 
 wifi:
-  ssid: "ESP_FA36E5"
+  ssid: !secret wifi_ssid
   password: !secret wifi_pwd
+  power_save_mode: NONE
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
+    channel: 9
     ssid: "Esp-Fa36E5 Fallback Hotspot"
     password: !secret ota_pwd
 

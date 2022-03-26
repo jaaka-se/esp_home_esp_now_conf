@@ -20,7 +20,8 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
+  power_save_mode: NONE
+  
   manual_ip:
     # Set this to the IP of the ESP
     static_ip: 192.168.0.105

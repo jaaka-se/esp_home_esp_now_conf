@@ -61,12 +61,18 @@ binary_sensor:
     pin: GPIO13
     name: "Garage PIR Sensor"
     device_class: motion
+    on_press:
+      - lambda: Mesh32RC::send("dolly3 pir= on");
+    on_release:
+      - lambda: Mesh32RC::send("dolly3 pir= off");
 
 # Example configuration entry
 sensor:
   - platform: wifi_signal
     name: "WiFi Signal Sensor"
     update_interval: 60s
+    filters:
+    - lambda: Mesh32RC::send("dolly3 filterd Wifi_signal= "+(String)x); return x;
 
 # Flashlight
 output:
@@ -93,3 +99,7 @@ web_server:
     username: camadmin
     password: !secret web_server_password
 
+custom_component:
+- lambda: |-
+    Mesh32RC::begin(0);
+    return {};

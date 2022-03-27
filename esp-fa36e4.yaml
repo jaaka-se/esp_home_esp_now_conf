@@ -1,0 +1,33 @@
+esphome:
+  name: esp-fa36e4
+  platform: ESP32
+  board: esp32dev
+  includes:
+  - Mesh32RC.h
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pwd
+  power_save_mode: NONE
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp-Fa36E4 Fallback Hotspot"
+    password: !secret ota_pwd
+
+captive_portal:
+
+custom_component:
+- lambda: |-
+    Mesh32RC::begin(9);
+    return {};
+

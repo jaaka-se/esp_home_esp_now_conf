@@ -1,5 +1,5 @@
 esphome:
-  name: esp-fa36e5
+  name: esp-fa36e4
   platform: ESP32
   board: esp32dev
   includes:
@@ -21,8 +21,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    channel: 9
-    ssid: "Esp-Fa36E5 Fallback Hotspot"
+    ssid: "Esp-Fa36E4 Fallback Hotspot"
     password: !secret ota_pwd
 
 captive_portal:

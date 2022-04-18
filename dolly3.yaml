@@ -58,8 +58,8 @@ esp32_camera_web_server:
 # Pir sensor  
 binary_sensor:
   - platform: gpio
-    pin: GPIO13
-    name: "Garage_PIR_Sensor"
+    pin: GPIO12
+    name: "Dolly3 PIR Sensor"
     device_class: motion
     on_press:
       - lambda: Mesh32RC::send("dolly3 pir= on");
@@ -91,7 +91,7 @@ light:
 switch:
   - platform: gpio
     pin: GPIO15
-    name: "Reboot"
+    name: "Reboot Dolly3"
     on_turn_on:
         - lambda: Mesh32RC::Reboot();
 

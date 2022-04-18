@@ -15,7 +15,7 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret ota_pwd
+  password: !secret api_pwd
 
 ota:
   password: !secret ota_pwd
@@ -59,7 +59,7 @@ esp32_camera_web_server:
 binary_sensor:
   - platform: gpio
     pin: GPIO13
-    name: "Garage PIR Sensor"
+    name: "Garage_PIR_Sensor"
     device_class: motion
     on_press:
       - lambda: Mesh32RC::send("dolly3 pir= on");
@@ -70,9 +70,10 @@ binary_sensor:
 sensor:
   - platform: wifi_signal
     name: "WiFi Signal Sensor"
+    #id: "dolly3_wifi_signal"
     update_interval: 60s
-    filters:
-    - lambda: Mesh32RC::send("dolly3 filterd Wifi_signal= "+(String)x); return x;
+    on_value:
+    - lambda: Mesh32RC::send("dolly3 ov_value Wifi_signal= "+(String)x);
 
 # Flashlight
 output:
@@ -84,6 +85,8 @@ light:
   - platform: binary
     output: gpio_4
     name: dolly2 light
+    on_turn_on:
+    - lambda: Mesh32RC::send("dolly3 ov_turn_onlight= ON"); Serial.println("dolly3lightON");
 
 switch:
   - platform: gpio
@@ -101,5 +104,7 @@ web_server:
 
 custom_component:
 - lambda: |-
-    Mesh32RC::begin(0);
+    Serial.println("start Mesh32");
+    Mesh32RC::begin(9);
+    Serial.println("start ready");
     return {};

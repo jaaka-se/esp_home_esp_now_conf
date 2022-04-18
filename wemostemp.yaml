@@ -2,7 +2,6 @@ esphome:
   name: wemostemp
   platform: ESP8266
   board: d1_mini
-  arduino_version: LATEST
   includes:
   - MeshRC.h
 
@@ -12,7 +11,7 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret ota_pwd
+  password: !secret api_pwd
 
 ota:
   password: !secret ota_password
@@ -35,15 +34,38 @@ wifi:
     password: !secret ota_pwd
     
 custom_component:
-- lambda: |-
-    MeshRC::begin(9);
-    return {};
+  - lambda: |-
+        MeshRC::begin(9);
+        MeshRC::on("ESP01 E8:DB:84:99:23:ED Started", []() {
+         id(PIR_Sensor)->publish_state(true);
+         });
+        MeshRC::on("Internal_led esp12-a off", []() {
+          id(PIR_Sensor)->publish_state(false);
+          MeshRC::send("my_remote-esp32-w-32d-1 from esp12a off");
+         });
+        MeshRC::on("ESP", [](unsigned char* st, unsigned l) {
+        	//String st = MeshRC::getValue();
+          ESP_LOGD("ESP_last", "Unhandled mesage: ESP%s", st);
+         });
+        return {};
    
 
 captive_portal:
 # Example configuration entry
 dallas:
   - pin: 2
+
+# Pir sensor  
+switch:
+  - platform: gpio
+    pin: GPIO13
+    name: "PIR_Sensor"
+    id: "PIR_Sensor"
+    #device_class: motion
+    on_turn_on:
+    - delay: 6000ms
+    - switch.turn_off: PIR_Sensor
+
 
 # Individual sensors
 sensor:

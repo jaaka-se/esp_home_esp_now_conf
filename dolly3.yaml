@@ -14,8 +14,8 @@ esp32:
 logger:
 
 # Enable Home Assistant API
-api:
-  password: !secret api_pwd
+#api:
+#  password: !secret api_pwd
 
 ota:
   password: !secret ota_pwd
@@ -23,6 +23,8 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pwd
+  power_save_mode: none
+  
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:

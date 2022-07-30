@@ -38,6 +38,11 @@ custom_component:
         MeshRC::begin(9);
         MeshRC::on("ESP01 E8:DB:84:99:23:ED Started", []() {
          id(PIR_Sensor)->publish_state(true);
+         ESP_LOGD("ESP01 E8:DB:84:99:23:ED ", "Started");
+         });
+        MeshRC::on("ESP01 BC:DD:C2:E6:29:B3 Started", []() {
+         id(FrontGate)->publish_state(true);
+         ESP_LOGD("ESP01 BC:DD:C2:E6:29:B3 ", "Started");
          });
         MeshRC::on("Internal_led esp12-a off", []() {
           id(PIR_Sensor)->publish_state(false);
@@ -46,6 +51,10 @@ custom_component:
         MeshRC::on("ESP", [](unsigned char* st, unsigned l) {
         	//String st = MeshRC::getValue();
           ESP_LOGD("ESP_last", "Unhandled mesage: ESP%s", st);
+         });
+        MeshRC::on("dolly", [](unsigned char* st, unsigned l) {
+        	//String st = MeshRC::getValue();
+          ESP_LOGD("ESP_last", "Unhandled mesage: dolly%s", st);
          });
         return {};
    
@@ -63,8 +72,18 @@ switch:
     id: "PIR_Sensor"
     #device_class: motion
     on_turn_on:
-    - delay: 6000ms
+    - delay: 60s
     - switch.turn_off: PIR_Sensor
+
+  - platform: template
+    name: "FrontGate"
+    id: "FrontGate"
+    #device_class: motion
+    optimistic: true 
+    on_turn_on:
+    - delay: 60s
+    - switch.turn_off: FrontGate
+    
 
 
 # Individual sensors
@@ -72,8 +91,17 @@ sensor:
   - platform: dallas
     address: 0xEF03139779C89228
     name: "kök Temperature"
+    filters:
+      - or:
+        - throttle: 10min
+        - delta: 0.5
+    
 
   - platform: dallas
     address: 0xAA03079779959728
     name: "dusch Temperature"
+    filters:
+      - or:
+        - throttle: 600s
+        - delta: 1.0
 

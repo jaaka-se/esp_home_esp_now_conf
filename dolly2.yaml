@@ -1,9 +1,14 @@
 esphome:
   name: dolly2
-  platform: ESP32
-  board: esp32cam
+#  board: esp32cam
   includes:
   - Mesh32RC.h
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
 
 
 # Enable logging
@@ -11,25 +16,28 @@ logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret ota_pwd
+  password: !secret api_pwd
 
 ota:
   password: !secret ota_pwd
 
 wifi:
+# Local MAC: 40:F5:20:79:4A:B0
   ssid: !secret wifi_ssid
   password: !secret wifi_pwd
+  power_save_mode: none
+  reboot_timeout: 24h
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Dolly2 Fallback Hotspot"
+    ssid: "dolly2 Fallback Hotspot"
     password: !secret ota_pwd
 
 
 
 # Example configuration entry
 esp32_camera:
-  name: Dolly2
+  name: dolly2
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -42,6 +50,8 @@ esp32_camera:
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
   resolution: 1280x1024
+  horizontal_mirror: False
+  vertical_flip: False
   # Example configuration entry
 esp32_camera_web_server:
   - port: 8080
@@ -49,18 +59,29 @@ esp32_camera_web_server:
   - port: 8081
     mode: snapshot
 
+custom_component:
+  - lambda: |-
+        Mesh32RC::begin(9);
+        Mesh32RC::on("ESP32 dolly", [](const uint8_t* st, uint8_t l) {
+        	//String st = MeshRC::getValue();
+          ESP_LOGD("ESP_last", "Unhandled mesage: ESP32 dolly%s", st);
+         });
+        return {};
+
 # Pir sensor  
 binary_sensor:
   - platform: gpio
     pin: GPIO13
-    name: "Garage PIR Sensor"
+    name: "dolly2 PIR Sensor"
     device_class: motion
 
 # Example configuration entry
 sensor:
   - platform: wifi_signal
-    name: "WiFi Signal Sensor"
-    update_interval: 60s
+    name: "dolly2_wifi_signal"
+    update_interval: 180s
+    on_value:
+    - lambda: Mesh32RC::send("dolly2 Wifi_signal= "+(String)x);
 
 # Flashlight
 output:
@@ -72,11 +93,14 @@ light:
   - platform: binary
     output: gpio_4
     name: dolly2 light
+    on_turn_on:
+    - lambda: Mesh32RC::send("dolly2 turn_light= ON");
+              Serial.println("dolly2lightON");
 
 switch:
   - platform: gpio
     pin: GPIO12
-    name: IrCut R
+    name: "dolly2 IrCut R"
     id: IrCutR
    # restore_mode: always_off
     icon: "mdi:gate"
@@ -88,7 +112,7 @@ switch:
 
   - platform: gpio
     pin: GPIO14
-    name: "IrCut L"
+    name: "dolly2 IrCut L"
     id: IrCutL
     #restore_mode: always_off
     icon: "mdi:gate"
@@ -97,12 +121,14 @@ switch:
     - delay: 200ms
     - switch.turn_off: IrCutL
 
-  - platform: gpio
-    pin: GPIO15
-    name: "Reboot"
+  - platform: template
+    #pin: GPIO15
+    name: "dolly2_Reboot"
+    optimistic: true
     on_turn_on:
-        - lambda: Mesh32RC::Reboot();
-
+        - lambda: ESP_LOGD("dolly2", "reboot started");
+            Mesh32RC::Reboot();
+          
 
 web_server:
   port: 80

@@ -180,10 +180,10 @@ esp_now_send_cb_t sendHandler = [](const uint8_t *addr, esp_now_send_status_t er
 	sending = false;
 	duration = micros() - sendTime;
 	if ( err != ESP_NOW_SEND_SUCCESS ) {
-		Serial.printf("*** ESP_NOW_SEND_FAILED Send cb to= %02X:%02X:%02X:%02X:%02X:%02X NOK  \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
-		Serial.printf("Send cb err= %i \n",err);
+		ESP_LOGD("Mesh32RC","*** ESP_NOW_SEND_FAILED Send cb to= %02X:%02X:%02X:%02X:%02X:%02X NOK  \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
+		ESP_LOGD("Mesh32RC","Send cb err= %i \n",err);
 	} else {
-		Serial.printf("Send cb from= %02X:%02X:%02X:%02X:%02X:%02X OK duration %u \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5],duration);
+		ESP_LOGD("Mesh32RC","Send cb from= %02X:%02X:%02X:%02X:%02X:%02X OK duration %u \n",addr[0], addr[1], addr[2], addr[3], addr[4], addr[5],duration);
 	}
 };
 
@@ -245,20 +245,21 @@ void begin(uint8_t channel) { //updated
 #endif
 		//esp_now_set_self_role(ESP_NOW_ROLE_COMBO);//ej hittad??
 		 uint8_t esp01C[6] = {0xE8, 0xDB, 0x84, 0x99, 0x4C, 0xA0};
-		 uint8_t esp01Cap[6] = {0xEA, 0xDB, 0x84, 0x99, 0x4C, 0xA0};
+		 //uint8_t esp01Cap[6] = {0xEA, 0xDB, 0x84, 0x99, 0x4C, 0xA0};// no ack
+		 uint8_t esp01Cap[6] = {0x84, 0x0D, 0x8E, 0xA8, 0x18, 0x9C};// wemostemp
 //const uint8_t broadcast[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-addReceiver(broadcast,0);
-addReceiver(esp01C,0);
-addReceiver(esp01Cap,0);
-//addReceiver(,0);
+addReceiver(broadcast,channel);
+addReceiver(esp01C,channel);
+addReceiver(esp01Cap,channel);
+//addReceiver(,channel);
 
 		esp_now_register_send_cb(sendHandler);
 		esp_now_register_recv_cb(recvHandler);
 #ifdef MESH_RC_DEBUG_ALL_MSG
-	Serial.printf(":: MESH_32RC espnow channel: %u \n",channel);
+	ESP_LOGD("Mesh32RC","C espnow channel: %u \n",channel);
 #endif
 	} else {
-	Serial.println(":: MESH32_RC espnow init failed: ");
+	ESP_LOGD("Mesh32RC","C espnow init failed: ");
 	}
 	
 			
@@ -267,7 +268,7 @@ addReceiver(esp01Cap,0);
 #endif
 }
 void Reboot() {
-  Serial.printf("reboot orderd in 1s");
+  ESP_LOGD("Mesh32RC","reboot orderd in 1s");
   delay(1000);
   ESP.restart();
 };

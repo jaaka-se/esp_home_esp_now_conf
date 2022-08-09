@@ -1,7 +1,7 @@
 esphome:
   name: e12
-  platform: ESP32
-  board: esp32dev
+  platform: ESP8266
+  board: esp12f
 
 # Enable logging
 logger:
@@ -22,3 +22,66 @@ wifi:
     password: !secret ota_pwd
 
 captive_portal:
+
+switch:
+  - platform: gpio
+    pin: GPIO12
+    name: dehumidifier1
+    id: dehumidifier1
+    restore_mode: always_off
+    on_turn_on:
+    - delay: 300000ms  #300s = 5min
+    - switch.turn_off: dehumidifier1
+
+number:
+# Max & min kontrolerad fläkt, startar vid mer än 85% går i 5 min eller till 55%
+  - platform: template
+    name: "Minimal humidity"
+    id: min_hum
+    optimistic: true
+    update_interval: never
+    initial_value: 55
+    min_value: 0
+    max_value: 100
+    step: 1
+
+  - platform: template
+    name: "Maximal humidity"
+    id: max_hum
+    optimistic: true
+    update_interval: never
+    initial_value: 85
+    min_value: 0
+    max_value: 100
+    step: 1
+
+sensor:
+  - platform: dht
+    pin: GPIO5
+    model: DHT22  # eller DHT22_TYPE2
+    update_interval: 4min
+    temperature:
+      name: "Temperature"
+
+    humidity:
+      name: "Humidity"
+      id: hum
+      on_value:
+          then:
+            - if:
+                condition:
+                  lambda: |-
+                    return (id(hum).state > id(max_hum).state);
+                then:
+                  - switch.turn_on: dehumidifier1
+                  - lambda: |- 
+                      ESPLOGI("Humidity","turn On at %f",id(hum).state);
+            - if:
+                condition:
+                  lambda: |-
+                    return (id(hum).state < id(min_hum).state);
+                then:
+                  - switch.turn_off: dehumidifier1
+                  - lambda: |- 
+                      ESPLOGI("Humidity","turn Off at %f",id(hum).state);
+  

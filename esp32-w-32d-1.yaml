@@ -26,6 +26,11 @@ wifi:
   #  ap_timeout: 48h
 
 captive_portal:
+# Example configuration entry
+remote_receiver:
+  pin: GPIO32
+  dump: all
+
 switch:
   - platform: template
     name: "Ext esp12 led"

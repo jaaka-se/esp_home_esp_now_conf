@@ -146,6 +146,7 @@ esp_now_recv_cb_t recvHandler = [](u8 *addr, u8 *data, u8 size) {
 #ifdef MESH_RC_DEBUG_ALL_MSG
 				Serial.println("For me ");
 #endif
+				i=events_num; //exit only firt match
 			} 
 		}
 	} else {

@@ -16,6 +16,8 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pwd
+  power_save_mode: none
+  reboot_timeout: 24h
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -46,13 +48,13 @@ esp32_camera:
 binary_sensor:
   - platform: gpio
     pin: GPIO13
-    name: "Garage PIR Sensor"
+    name: "Cam1 PIR Sensor"
     device_class: motion
 
 # wifi_signal sensor
 sensor:
   - platform: wifi_signal
-    name: "WiFi Signal Sensor"
+    name: "Cam1WiFi Signal Sensor"
     update_interval: 60s
 
 # Flashlight

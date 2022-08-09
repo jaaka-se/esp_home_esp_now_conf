@@ -2,7 +2,6 @@ esphome:
   name: espnow-w1
   platform: ESP8266
   board: d1_mini
-  arduino_version: LATEST
   includes:
   - MeshRC.h
 
@@ -38,24 +37,24 @@ switch:
   pin: 12
   id: my_switch
   on_turn_on:
-  - lambda: MeshRC.send("my_switch on");
+  - lambda: MeshRC::send("my_switch on");
   on_turn_off:
-  - lambda: MeshRC.send("my_switch off");
+  - lambda: MeshRC::send("my_switch off");
 
 custom_component:
 - lambda: |-
-    MeshRC.begin(9);
-    MeshRC.on("my_motion on", []() {
+    MeshRC::begin(9);
+    MeshRC::on("my_motion on", []() {
       id(my_light)->turn_on().perform();
     });
-    MeshRC.on("my_motion off", []() {
+    MeshRC::on("my_motion off", []() {
       id(my_light)->turn_off().perform();
     });
-    MeshRC.on("status my_switch", []() {
+    MeshRC::on("status my_switch", []() {
       if (id(my_switch).state) {
         MeshRC.send("my_switch on");
       } else {
-        MeshRC.send("my_switch off");
+        MeshRC::send("my_switch off");
       }
     });
     return {};

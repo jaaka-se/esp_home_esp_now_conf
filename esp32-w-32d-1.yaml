@@ -28,14 +28,15 @@ wifi:
 captive_portal:
 # Example configuration entry
 remote_receiver:
-  pin: GPIO32
+  pin: 
+    number: GPIO32
     inverted: true
-  dump: all
+  #dump: all
 #  dump: raw
   filter: 200us
-#  dump: rc_switch
-    #- nexa
-    #- rc_switch
+  dump:
+    - nexa
+    - rc_switch
 
 switch:
   - platform: template

@@ -14,8 +14,8 @@ esp32:
 logger:
 
 # Enable Home Assistant API
-#api:
-#  password: !secret api_pwd
+api:
+  password: !secret api_pwd
 
 ota:
   password: !secret ota_pwd
@@ -71,7 +71,7 @@ binary_sensor:
 # Example configuration entry
 sensor:
   - platform: wifi_signal
-    name: "WiFi Signal Sensor"
+    name: "dolly3 WiFi rsi"
     #id: "dolly3_wifi_signal"
     update_interval: 60s
     on_value:
@@ -86,7 +86,7 @@ output:
 light:
   - platform: binary
     output: gpio_4
-    name: dolly2 light
+    name: dolly3 light
     on_turn_on:
     - lambda: Mesh32RC::send("dolly3 ov_turn_onlight= ON"); Serial.println("dolly3lightON");
 

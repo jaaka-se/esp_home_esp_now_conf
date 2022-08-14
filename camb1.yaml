@@ -1,14 +1,21 @@
 esphome:
   name: camb1
-  platform: ESP32
-  board: esp32cam
+  includes:
+  - Mesh32RC.h
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+
 
 # Enable logging
 logger:
 
 # Enable Home Assistant API
 api:
-  password: !secret ota_pwd
+  password: !secret api_pwd
 
 ota:
   password: !secret ota_pwd
@@ -27,6 +34,7 @@ wifi:
 
 # Example configuration entry AI-thinker
 esp32_camera:
+  name: camb1
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -40,15 +48,25 @@ esp32_camera:
   power_down_pin: GPIO32
 
   # Image settings
-  name: camb1
   resolution: 1280x1024
-  # ...
+  horizontal_mirror: False
+  vertical_flip: False
+ # ...
+
+custom_component:
+  - lambda: |-
+        Mesh32RC::begin(9);
+        Mesh32RC::on("ESP32 camb1", [](const uint8_t* st, uint8_t l) {
+        	//String st = MeshRC::getValue();
+          ESP_LOGD("ESP32 camb1", "Unhandled mesage: ESP32 camb1 %s", st);
+         });
+        return {};
 
 # Pir sensor  
 binary_sensor:
   - platform: gpio
     pin: GPIO13
-    name: "Cam1 PIR Sensor"
+    name: "Camb1 PIR Sensor"
     device_class: motion
 
 # wifi_signal sensor
@@ -68,6 +86,18 @@ light:
     output: gpio_4
     name: camb1 light
 
+switch:
+  - platform: template
+    name: "camb1_Reboot"
+    optimistic: true
+    on_turn_on:
+        - lambda: ESP_LOGD("camb1", "reboot started");
+            Mesh32RC::Reboot();
+          
 
+web_server:
+  port: 80
+  auth:
+    username: camadmin
+    password: !secret web_server_password
 
-captive_portal:

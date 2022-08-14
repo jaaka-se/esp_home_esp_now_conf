@@ -61,15 +61,21 @@ custom_component:
 
 captive_portal:
 # Example configuration entry
+remote_transmitter:
+  pin: 
+    number: GPIO14
+    inverted: true
+  carrier_duty_percent: 100%
+
 dallas:
   - pin: 2
 
 # Pir sensor  
 switch:
-  - platform: gpio
-    pin: GPIO13
+  - platform: template
     name: "PIR_Sensor"
     id: "PIR_Sensor"
+    optimistic: true 
     #device_class: motion
     on_turn_on:
     - delay: 60s
@@ -84,7 +90,46 @@ switch:
     - delay: 60s
     - switch.turn_off: FrontGate
     
+  - platform: template
+    name: Vrum_read_lamp
+    optimistic: true 
+    # nexa D3
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+         code: '010100000001000000010101'
+         repeat:
+            times: 10
+            wait_time: 0s
+         protocol: 6
 
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+         code: '010100000001000000010100'
+         repeat:
+            times: 10
+            wait_time: 0s
+         protocol: 6
+
+
+  - platform: template
+    name: sov_J_lamp
+    optimistic: true 
+    #nexa D2
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+         code: '010100000100000000010101'
+         repeat:
+            times: 10
+            wait_time: 0s
+         protocol: 6
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+         code: '010100000100000000010100'
+         repeat:
+            times: 10
+            wait_time: 0s
+         protocol: 6
+  
 
 # Individual sensors
 sensor:

@@ -147,6 +147,22 @@ sensor:
     name: "dusch Temperature"
     filters:
       - or:
-        - throttle: 600s
+        - throttle: 5min
         - delta: 1.0
 
+  - platform: dallas
+    address: 0x3a3c01d607f8f328
+    name: "in 1.5 Temperature"
+    filters:
+      - or:
+        - throttle: 5min
+        - delta: 1.0
+  
+  - platform: dallas
+    address: 0x873c01d0756a0428
+    name: "out 3.0 Temperature"
+    filters:
+      - or:
+        - throttle: 5min
+        - delta: 1.0
+  

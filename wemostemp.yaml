@@ -36,13 +36,13 @@ wifi:
 custom_component:
   - lambda: |-
         MeshRC::begin(9);
-        MeshRC::on("ESP01 E8:DB:84:99:23:ED Started", []() {
+        MeshRC::on("ESP01 E8:DB:84:99:23:ED Started", [](unsigned char* st, unsigned l) {
          id(PIR_Sensor)->publish_state(true);
-         ESP_LOGD("ESP01 E8:DB:84:99:23:ED ", "Started");
+         ESP_LOGD("ESP01 E8:DB:84:99:23:ED ", "Started %s",st);
          });
-        MeshRC::on("ESP01 BC:DD:C2:E6:29:B3 Started", []() {
+        MeshRC::on("ESP01 BC:DD:C2:E6:29:B3 Started", [](unsigned char* st, unsigned l) {
          id(FrontGate)->publish_state(true);
-         ESP_LOGD("ESP01 BC:DD:C2:E6:29:B3 ", "Started");
+         ESP_LOGD("ESP01 BC:DD:C2:E6:29:B3 ", "Started %s",st);
          });
         MeshRC::on("Internal_led esp12-a off", []() {
           id(PIR_Sensor)->publish_state(false);
@@ -140,7 +140,6 @@ sensor:
       - or:
         - throttle: 10min
         - delta: 0.5
-    
 
   - platform: dallas
     address: 0xAA03079779959728

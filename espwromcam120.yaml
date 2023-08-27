@@ -1,0 +1,64 @@
+esphome:
+  name: espwromcam120
+  friendly_name: espwromCam120
+
+esp32:
+  board: esp32cam
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "sC+ZWwnugeqjYiu1tLLsyKwfs7a9O/3cPGz2n3piQw8="
+
+ota:
+  password: "f5b81b4eff7ea62a9994c07a36cd46a2"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Espwromcam120Hotspot"
+    password: !secret ota_pwd
+
+esp32_camera:
+  name: espcam120
+  external_clock:
+    pin: GPIO21
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO4, GPIO5, GPIO18, GPIO19, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  
+  max_framerate: 10 fps
+  idle_framerate: 1.0 fps
+  resolution: VGA
+  horizontal_mirror: false
+  vertical_flip: false
+  brightness: 2
+  contrast: 2  
+  # Example configuration entry
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+
+web_server:
+  port: 80
+  auth:
+    username: camadmin
+    password: !secret web_server_password
+
+captive_portal:
+    

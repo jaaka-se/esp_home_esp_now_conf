@@ -62,29 +62,11 @@ custom_component:
          });
         return {};
 
-# Pir sensor  
-binary_sensor:
-  - platform: gpio
-    pin: GPIO13
-    name: "Camb1 PIR Sensor"
-    device_class: motion
-
 # wifi_signal sensor
 sensor:
   - platform: wifi_signal
     name: "Cam1WiFi Signal Sensor"
     update_interval: 60s
-
-# Flashlight
-output:
-  - platform: gpio
-    pin: GPIO4
-    id: gpio_4
-    
-light:
-  - platform: binary
-    output: gpio_4
-    name: camb1 light
 
 switch:
   - platform: template
